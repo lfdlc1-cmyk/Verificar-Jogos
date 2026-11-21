@@ -84,7 +84,7 @@ $('photo').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;cur
 function parseTicketDate(text){
 const raw=String(text),clean=raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[|]/g,'1');
 const found=[];
-const add=(d,m,y,pos,kind)=>{d=Number(d);m=Number(m);y=Number(y);if(y<100)y+=2000;if(y>=2020&&y<=2040&&m>=1&&m<=12&&d>=1&&d<=31){const dt=new Date(Date.UTC(y,m-1,d));if(dt.getUTCFullYear()===y&&dt.getUTCMonth()===m-1&&dt.getUTCDate()===d&&!found.some(x=>x.value===dt.toISOString().slice(0,10)))found.push({value:dt.toISOString().slice(0,10),pos,kind})}};
+const add=(d,m,y,pos,kind)=>{d=Number(d);m=Number(m);y=Number(y);if(y<100)y+=2000;if(/m1lh[aã]o|milh[aã]o/i.test(raw)&&Math.abs(y-2026)>1)y=2026;if(y>=2020&&y<=2030&&m>=1&&m<=12&&d>=1&&d<=31){const dt=new Date(Date.UTC(y,m-1,d));if(dt.getUTCFullYear()===y&&dt.getUTCMonth()===m-1&&dt.getUTCDate()===d&&!found.some(x=>x.value===dt.toISOString().slice(0,10)))found.push({value:dt.toISOString().slice(0,10),pos,kind})}};
 let m,re=/(20\d{2})\s*[\/.-]\s*([01]?\d)\s*[\/.-]\s*([0-3]?\d)/g;
 while((m=re.exec(clean)))add(m[3],m[2],m[1],m.index,'iso');
 re=/\b([0-3]?\d)\s*[\/.-]\s*([01]?\d)\s*[\/.-]\s*(20\d{2}|\d{2})\b/g;
@@ -101,7 +101,9 @@ return found[0].value;
 }
 function extractMilhaoCode(text){
 const clean=String(text).toUpperCase().replace(/[|!]/g,'I');
-const matches=[...clean.matchAll(/([A-Z0-9]{3})[\s:._-]+([0-9OQDILSBZ]{5})(?![0-9OQDILSBZ])/g)];
+const dateMatch=clean.match(/20\d{2}\s*[\/.-]\s*[01]?\d\s*[\/.-]\s*[0-3]?\d/);
+const searchText=dateMatch?clean.slice(dateMatch.index+dateMatch[0].length):clean;
+const matches=[...searchText.matchAll(/\b([A-Z0-9]{3})[\s:._-]+([0-9OQDILSBZ]{5})(?![0-9OQDILSBZ])/g)];
 for(const m of matches){
 let letters=m[1].replace(/5/g,'S').replace(/8/g,'B').replace(/0/g,'O').replace(/1/g,'I');
 let digits=m[2].replace(/[OQD]/g,'0').replace(/[IL]/g,'1').replace(/S/g,'5').replace(/B/g,'8').replace(/Z/g,'2');

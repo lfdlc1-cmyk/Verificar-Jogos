@@ -50,9 +50,9 @@ label{display:block;color:var(--muted);font-size:12px;margin:15px 0 7px}.grid{di
 </div>
 <div class="card hidden" id="entry">
 <h2>2. Confirma a aposta</h2><p class="sub">A leitura automática é uma ajuda. Confirma sempre os números antes da comparação.</p>
-<label for="game">Jogo</label><select id="game"><option value="euro">Euromilhões</option><option value="toto">Totoloto</option></select>
+<label for="game">Jogo</label><select id="game"><option value="euro">Euromilhões</option><option value="toto">Totoloto</option><option value="milhao">M1lhão</option></select>
 <label for="drawDate">Data do sorteio do boletim</label><input id="drawDate" type="date">
-<div id="numbersWrap"><label>5 números</label><div class="grid" id="numbers"></div></div>
+<div id="numbersWrap"><label>5 números</label><div class="grid" id="numbers"></div></div><div id="milhaoWrap" class="hidden"><label for="milhaoCode">Código M1LHÃO do teu boletim</label><input id="milhaoCode" type="text" maxlength="9" placeholder="ABC 12345" autocomplete="off"><label for="winningCode">Código vencedor do sorteio</label><input id="winningCode" type="text" maxlength="9" placeholder="ABC 12345" autocomplete="off"><div class="hint">O M1LHÃO é um sorteio à sexta-feira. Confirma a data e o código vencedor nos resultados oficiais.</div></div>
 <label id="extraTitle">2 estrelas</label><div class="grid extra" id="extras"></div>
 <div class="hint">Euromilhões: 5 números de 1 a 50 e 2 estrelas de 1 a 12. Totoloto: 5 números de 1 a 49 e Número da Sorte de 1 a 13.</div>
 <button class="primary" id="check">Verificar aposta</button>

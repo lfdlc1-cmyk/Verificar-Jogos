@@ -1,0 +1,20 @@
+# Verifica Jogos
+
+Aplicação web instalável (PWA) em português de Portugal.
+
+## Publicar
+1. Envie os quatro ficheiros desta pasta para a raiz de um projeto Cloudflare Pages ou outro alojamento HTTPS.
+2. Abra o endereço HTTPS no Safari do iPhone.
+3. Toque em Partilhar > Adicionar ao ecrã principal.
+
+## Funcionalidades
+- Abrir a câmara do iPhone ou escolher uma fotografia.
+- OCR para tentar ler o texto e preencher os números.
+- Confirmação/correcção manual dos números antes da comparação.
+- Consulta de resultados recentes, comparação de Euromilhões e Totoloto e histórico local.
+- Interface adaptada a telemóvel e instalação como PWA.
+
+## Fonte de resultados e limites
+O carregamento automático usa o arquivo comunitário https://github.com/hmiguel/jsc-history, que declara recolher resultados publicados pela Jogos Santa Casa. Não é uma API oficial nem é operado pela Santa Casa. A aplicação apresenta a chave e identifica a categoria de prémio pela matriz de acertos; não calcula o valor monetário variável nem valida o recibo. Confirmar sempre o resultado e o prémio no portal oficial https://www.jogossantacasa.pt/.
+
+O OCR usa Tesseract.js através de CDN e pode falhar em fotografias pouco nítidas, boletins dobrados, manuscritos ou apostas múltiplas. Os números devem ser revistos antes da comparação. A primeira utilização e a consulta dos resultados precisam de ligação à Internet. A instalação e a câmara exigem HTTPS.

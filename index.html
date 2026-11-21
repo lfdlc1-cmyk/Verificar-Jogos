@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090b10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Verifica Jogos">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Verifica Jogos</title>
+<style>
+:root{color-scheme:dark;--bg:#090b10;--panel:#141923;--panel2:#0e131c;--line:#293241;--muted:#9ba7b7;--fg:#f5f7fb;--blue:#83adff;--green:#5bdd9f;--red:#ff7777;--gold:#ffd477}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:600px;margin:auto;padding:calc(16px + env(safe-area-inset-top)) 17px calc(35px + env(safe-area-inset-bottom))}
+header{display:flex;justify-content:space-between;align-items:center;margin:5px 0 28px}.brand{font-size:20px;font-weight:800;letter-spacing:-.5px}.brand span{color:var(--blue)}.sub{font-size:12px;color:var(--muted);margin-top:4px}
+h1{font-size:30px;line-height:1.12;letter-spacing:-1px;margin:0 0 9px}h2{font-size:17px;margin:0 0 8px}p{color:var(--muted);line-height:1.48;margin:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:21px;padding:17px;margin-top:17px}
+.hero{padding:0 2px 3px}.pill{border:1px solid var(--line);border-radius:99px;padding:7px 10px;color:var(--muted);font-size:11px}
+button,.btn{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:14px 15px;font-weight:700}
+.primary{width:100%;background:#edf2fa;color:#101722;margin-top:15px}.primary small{display:block;font-size:11px;font-weight:500;opacity:.65;margin-top:3px}
+.secondary{background:transparent;border:1px solid var(--line);color:var(--fg);font-weight:600}.row{display:flex;gap:9px}.row>*{flex:1}
+input,select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--fg);padding:13px;font:inherit;min-width:0}
+label{display:block;color:var(--muted);font-size:12px;margin:15px 0 7px}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.grid.extra{grid-template-columns:repeat(2,1fr)}.grid input{text-align:center;padding:12px 2px;font-weight:750}
+#preview{display:none;width:100%;max-height:260px;object-fit:contain;border-radius:12px;background:#080a0e;margin-top:13px}
+.status{font-size:12px;color:var(--blue);min-height:17px;margin-top:11px;line-height:1.4}.hint{font-size:11px;color:var(--muted);line-height:1.45;margin-top:10px}
+.tabs{display:flex;gap:8px;margin-top:20px}.tab{flex:1;background:transparent;border:1px solid var(--line);color:var(--muted);padding:11px 8px}.tab.active{background:#202a3a;color:var(--fg);border-color:#42536c}
+.hidden{display:none!important}.ballrow{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.ball{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#263246;font-size:13px;font-weight:800}.ball.star{background:#493916;color:var(--gold)}
+.result{border:1px solid #345441;background:#112018;border-radius:15px;padding:14px;margin-top:13px}.result.no{border-color:var(--line);background:var(--panel2)}.result h3{font-size:17px;margin:0 0 5px}.green{color:var(--green)}.red{color:var(--red)}
+.item{padding:13px 0;border-top:1px solid var(--line)}.item:first-child{border-top:0}.itemhead{display:flex;justify-content:space-between;gap:10px}.tiny{font-size:11px;color:var(--muted);line-height:1.5}
+.link{color:var(--blue);text-decoration:none}.foot{margin:22px 2px 0;color:#788493;font-size:10px;line-height:1.55}
+#busy{display:none;position:fixed;inset:0;background:#090b10eF;z-index:5;align-items:center;justify-content:center;text-align:center;padding:25px}
+.spinner{width:28px;height:28px;border:3px solid #344154;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 13px}@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="busy"><div><div class="spinner"></div><div id="busyText">A processar…</div></div></div>
+<main>
+<header><div><div class="brand"><span>✳</span> Verifica Jogos</div><div class="sub">Euromilhões · Totoloto</div></div><div class="pill">PORTUGAL</div></header>
+<section class="hero"><h1>Confere o teu boletim.<br>Num instante.</h1><p>Fotografa o boletim. Lemos as apostas e comparamos com o sorteio escolhido.</p></section>
+<nav class="tabs"><button class="tab active" data-tab="scan">Fotografar</button><button class="tab" data-tab="history">Histórico</button><button class="tab" data-tab="draws">Resultados</button></nav>
+<section id="scan">
+<div class="card">
+<h2>1. Fotografar o boletim</h2><p class="sub">Enquadra os números com boa luz e evita sombras.</p>
+<input id="photo" type="file" accept="image/*" capture="environment" hidden>
+<button class="primary" id="take">📷 Abrir câmara<small>Toca para fotografar o boletim</small></button>
+<div class="row" style="margin-top:9px"><button class="secondary" id="gallery">Escolher da galeria</button><button class="secondary" id="reset">Limpar</button></div>
+<img id="preview" alt="Fotografia do boletim">
+<div id="ocrStatus" class="status" aria-live="polite"></div>
+</div>
+<div class="card hidden" id="entry">
+<h2>2. Confirma a aposta</h2><p class="sub">A leitura automática é uma ajuda. Confirma sempre os números antes da comparação.</p>
+<label for="game">Jogo</label><select id="game"><option value="euro">Euromilhões</option><option value="toto">Totoloto</option></select>
+<label for="drawDate">Data do sorteio do boletim</label><input id="drawDate" type="date">
+<div id="numbersWrap"><label>5 números</label><div class="grid" id="numbers"></div></div>
+<label id="extraTitle">2 estrelas</label><div class="grid extra" id="extras"></div>
+<div class="hint">Euromilhões: 5 números de 1 a 50 e 2 estrelas de 1 a 12. Totoloto: 5 números de 1 a 49 e Número da Sorte de 1 a 13.</div>
+<button class="primary" id="check">Verificar aposta</button>
+<div id="checkStatus" class="status" aria-live="polite"></div>
+<div id="checkResult"></div>
+</div>
+</section>
+<section id="history" class="hidden"><div class="card"><h2>Boletins guardados</h2><p class="sub">As verificações ficam guardadas neste dispositivo.</p><div id="historyList" style="margin-top:12px"></div><button class="secondary" id="clearHistory" style="width:100%;margin-top:12px">Apagar histórico</button></div></section>
+<section id="draws" class="hidden"><div class="card"><h2>Últimos resultados</h2><p class="sub">Resultados importados de um arquivo comunitário que recolhe dados publicados pela Santa Casa. Confirma sempre no portal oficial.</p><label>Jogo</label><select id="drawGame"><option value="euro">Euromilhões</option><option value="toto">Totoloto</option></select><div id="latestDraw" style="margin-top:14px"></div><button class="secondary" id="refresh" style="width:100%;margin-top:13px">Atualizar resultados</button></div></section>
+<footer class="foot">A aplicação não é um serviço oficial da Santa Casa. A comparação identifica categorias prováveis com base na chave do sorteio, mas não valida o recibo nem confirma o valor monetário. Os valores variam por concurso. O recibo registado no sistema dos Jogos Santa Casa é o documento válido para reclamar prémios.<br><br><a class="link" href="https://www.jogossantacasa.pt/" target="_blank" rel="noopener">Abrir Jogos Santa Casa ↗</a> · <a class="link" href="https://www.jogossantacasa.pt/web/SCListaPremios/searchPrizeHistory" target="_blank" rel="noopener">Histórico oficial de prémios ↗</a></footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const DATA_URL={euro:'https://raw.githubusercontent.com/hmiguel/jsc-history/main/euromillions.jsonl',toto:'https://raw.githubusercontent.com/hmiguel/jsc-history/main/totoloto.jsonl'};
+let draws={euro:[],toto:[]},ocrWorker=null,currentPhoto=null,lastResult=null;
+const storageKey='verificaJogos_final_v1';
+function busy(on,msg='A processar…'){$('busyText').textContent=msg;$('busy').style.display=on?'flex':'none'}
+function status(s){$('ocrStatus').textContent=s}
+function history(){try{return JSON.parse(localStorage.getItem(storageKey)||'[]')}catch{return[]}}
+function saveHistory(a){localStorage.setItem(storageKey,JSON.stringify(a))}
+function showTab(tab){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));['scan','history','draws'].forEach(id=>$(id).classList.toggle('hidden',id!==tab));if(tab==='history')renderHistory();if(tab==='draws')renderLatest()}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+function buildFields(){let game=$('game').value;$('numbers').innerHTML='';$('extras').innerHTML='';for(let i=0;i<5;i++){let x=document.createElement('input');x.type='number';x.inputMode='numeric';x.min=1;x.max=game==='euro'?50:49;x.placeholder='—';x.setAttribute('aria-label','Número '+(i+1));$('numbers').append(x)}let n=game==='euro'?2:1;for(let i=0;i<n;i++){let x=document.createElement('input');x.type='number';x.inputMode='numeric';x.min=1;x.max=game==='euro'?12:13;x.placeholder='—';x.setAttribute('aria-label',game==='euro'?'Estrela '+(i+1):'Número da Sorte');$('extras').append(x)}$('extraTitle').textContent=game==='euro'?'2 estrelas':'Número da Sorte'}
+$('game').onchange=buildFields;buildFields();
+$('take').onclick=()=>$('photo').click();$('gallery').onclick=()=>$('photo').click();
+$('reset').onclick=()=>{$('photo').value='';$('preview').style.display='none';$('entry').classList.add('hidden');$('checkResult').innerHTML='';status('')};
+$('photo').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;currentPhoto=file;$('preview').src=URL.createObjectURL(file);$('preview').style.display='block';$('entry').classList.remove('hidden');buildFields();$('checkResult').innerHTML='';status('A preparar reconhecimento…');busy(true,'A ler o boletim…');try{if(!window.Tesseract)throw Error('OCR indisponível');const result=await Tesseract.recognize(file,'eng',{logger:m=>{if(m.status==='recognizing text')$('busyText').textContent='A ler números… '+Math.round((m.progress||0)*100)+'%'}});const text=result.data.text||'';autoDetect(text);status('Leitura terminada. Revê os números e a data.');}catch(err){status('Não foi possível reconhecer os números automaticamente. Preenche os campos à mão.');}finally{busy(false)}};
+function autoDetect(text){const t=text.toLowerCase();if(t.includes('totoloto'))$('game').value='toto';else if(t.includes('euromil'))$('game').value='euro';buildFields();let dm=text.match(/\b([0-3]?\d)[/.-]([01]?\d)[/.-](20\d{2})\b/);if(dm){let d=dm[1].padStart(2,'0'),m=dm[2].padStart(2,'0');$('drawDate').value=`${dm[3]}-${m}-${d}`}let all=(text.match(/\b\d{1,2}\b/g)||[]).map(Number);let max=$('game').value==='euro'?50:49;let uniq=[];for(let n of all)if(n>=1&&n<=max&&!uniq.includes(n))uniq.push(n);let fields=[...$('numbers').querySelectorAll('input')];fields.forEach((x,i)=>x.value=uniq[i]??'');let extra=$('extras').querySelectorAll('input');let extras=all.filter(n=>n>=1&&n<=($('game').value==='euro'?12:13));extra.forEach((x,i)=>x.value=extras[extras.length-extra.length+i]??'')}
+async function loadDraws(game,force=false){if(draws[game].length&&!force)return draws[game];const res=await fetch(DATA_URL[game]+'?v='+Date.now(),{cache:'no-store'});if(!res.ok)throw Error('Não foi possível obter resultados');const txt=await res.text();const rows=txt.trim().split(/\r?\n/).filter(Boolean).map(line=>JSON.parse(line));draws[game]=rows.filter(d=>d.date&&Array.isArray(d.numbers)&&d.numbers.length===5).sort((a,b)=>b.date.localeCompare(a.date));return draws[game]}
+function chooseDraw(game,date){const list=draws[game];if(date)return list.find(d=>d.date===date);return list[0]}
+function euroPrize(n,s){const key=n+'+'+s;const tiers={'5+2':'1.º prémio','5+1':'2.º prémio','5+0':'3.º prémio','4+2':'4.º prémio','4+1':'5.º prémio','3+2':'6.º prémio','4+0':'7.º prémio','2+2':'8.º prémio','3+1':'9.º prémio','3+0':'10.º prémio','1+2':'11.º prémio','2+1':'12.º prémio','2+0':'13.º prémio'};return tiers[key]||null}
+function totoPrize(n,lucky){if(n===5&&lucky)return'1.º prémio (5 + Número da Sorte)';if(n===5)return'2.º prémio (5 números)';if(n===4)return'3.º prémio (4 números)';if(n===3)return'4.º prémio (3 números)';if(n===2)return'5.º prémio (2 números)';if(lucky)return'Número da Sorte (devolução da aposta)';return null}
+function balls(nums,cls=''){return `<div class="ballrow">${nums.map(n=>`<span class="ball ${cls}">${n}</span>`).join('')}</div>`}
+function matchResult(game,nums,extra,draw){const hits=nums.filter(n=>draw.numbers.includes(n)).length;let prize,extraHits=0;if(game==='euro'){extraHits=extra.filter(n=>(draw.stars||[]).includes(n)).length;prize=euroPrize(hits,extraHits)}else{let lucky=extra[0]===Number(draw.lucky);prize=totoPrize(hits,lucky)}return{hits,extraHits,prize}}
+$('check').onclick=async()=>{const game=$('game').value,nums=[...$('numbers').querySelectorAll('input')].map(x=>Number(x.value)),extra=[...$('extras').querySelectorAll('input')].map(x=>Number(x.value)),date=$('drawDate').value,max=game==='euro'?50:49,emax=game==='euro'?12:13;if(nums.some(n=>!Number.isInteger(n)||n<1||n>max)||new Set(nums).size!==5||extra.some(n=>!Number.isInteger(n)||n<1||n>emax)||new Set(extra).size!==extra.length){$('checkStatus').textContent='Confirma os 5 números e os números adicionais. Não pode haver números repetidos.';return}
+busy(true,'A consultar o sorteio…');$('checkStatus').textContent='';$('checkResult').innerHTML='';try{await loadDraws(game);let draw=chooseDraw(game,date);if(!draw){$('checkStatus').textContent=date?'Não encontrei esse sorteio no arquivo de resultados. Confirma a data ou tenta mais tarde.':'Ainda não há resultados disponíveis.';return}let r=matchResult(game,nums,extra,draw);lastResult={game,nums,extra,date:draw.date,draw,r};let won=!!r.prize;let html=`<div class="result ${won?'':'no'}"><h3 class="${won?'green':''}">${won?'🎉 Há uma categoria premiada!':'Desta vez, sem prémio identificado'}</h3><p>${r.hits} número(s) certo(s)${game==='euro'?` e ${r.extraHits} estrela(s) certa(s)`:r.extraHits?' e Número da Sorte certo':''}.</p>${won?`<p style="margin-top:7px"><b>${r.prize}</b></p>`:''}<div class="tiny" style="margin-top:8px">Sorteio ${draw.draw||''} · ${draw.date}</div><div class="tiny" style="margin-top:5px">Chave sorteada</div>${balls(draw.numbers)}${balls(game==='euro'?draw.stars:[draw.lucky], 'star')}<div class="tiny">O valor monetário não é calculado nesta aplicação. Consulta a tabela oficial do concurso.</div><a class="link tiny" href="https://www.jogossantacasa.pt/" target="_blank" rel="noopener">Confirmar na Santa Casa ↗</a></div>`;$('checkResult').innerHTML=html;$('checkStatus').textContent='Comparação concluída.';let h=history();h.push({game,nums,extra,date:draw.date,draw:draw.draw||'',hits:r.hits,extraHits:r.extraHits,prize:r.prize||'',saved:new Date().toISOString()});saveHistory(h)}catch(e){$('checkStatus').textContent='Não foi possível obter os resultados agora. Verifica a ligação à Internet e tenta novamente.'}finally{busy(false)}};
+function renderHistory(){let h=history().slice().reverse();$('historyList').innerHTML=h.length?h.map(x=>`<div class="item"><div class="itemhead"><b>${x.game==='euro'?'Euromilhões':'Totoloto'}</b><span class="tiny">${x.date}</span></div><div class="tiny">Aposta: ${x.nums.join(' · ')} + ${x.extra.join(' · ')}</div><div class="${x.prize?'green':'tiny'}" style="margin-top:5px">${x.prize||`${x.hits} número(s) certo(s), sem prémio identificado`}</div></div>`).join(''):'<p class="tiny">Ainda não guardaste nenhuma verificação.</p>'}
+$('clearHistory').onclick=()=>{if(confirm('Queres apagar todo o histórico deste dispositivo?')){saveHistory([]);renderHistory()}}
+function renderLatest(){let g=$('drawGame').value;let d=draws[g][0];$('latestDraw').innerHTML=d?`<div class="tiny">Sorteio ${d.draw||''} · ${d.date}</div>${balls(d.numbers)}${balls(g==='euro'?d.stars:[d.lucky],'star')}`:'<p class="tiny">Carrega em Atualizar resultados para consultar o último sorteio.</p>'}
+$('drawGame').onchange=renderLatest;$('refresh').onclick=async()=>{busy(true,'A atualizar resultados…');try{await loadDraws($('drawGame').value,true);renderLatest()}catch(e){$('latestDraw').innerHTML='<p class="tiny">Não foi possível atualizar. Tenta novamente mais tarde.</p>'}finally{busy(false)}};
+async function init(){try{await Promise.all([loadDraws('euro'),loadDraws('toto')]);renderLatest()}catch(e){/* a atualização manual fica disponível */}}
+init();
+if('serviceWorker'in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+</script>
+</body></html>

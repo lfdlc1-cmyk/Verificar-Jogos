@@ -103,7 +103,7 @@ function extractMilhaoCode(text){
 const clean=String(text).toUpperCase().replace(/[|!]/g,'I');
 const dateMatch=clean.match(/20\d{2}\s*[\/.-]\s*[01]?\d\s*[\/.-]\s*[0-3]?\d/);
 const searchText=dateMatch?clean.slice(dateMatch.index+dateMatch[0].length):clean;
-const matches=[...searchText.matchAll(/\b([A-Z0-9]{3})[\s:._-]+([0-9OQDILSBZ]{5})(?![0-9OQDILSBZ])/g)];
+const matches=[...searchText.matchAll(/(?:^|[^A-Z0-9])([A-Z0-9]{3})[\s:._-]*([0-9OQDILSBZ]{5})(?![0-9OQDILSBZ])/gm)];
 for(const m of matches){
 let letters=m[1].replace(/5/g,'S').replace(/8/g,'B').replace(/0/g,'O').replace(/1/g,'I');
 let digits=m[2].replace(/[OQD]/g,'0').replace(/[IL]/g,'1').replace(/S/g,'5').replace(/B/g,'8').replace(/Z/g,'2');

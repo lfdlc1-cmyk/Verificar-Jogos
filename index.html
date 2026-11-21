@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verificar jogos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js"></script>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#14213d;--mute:#5b667a;--line:#cfd6e0;--ok:#0a6b4b;--bad:#c8102e}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1522;--card:#17202f;--ink:#e8edf5;--mute:#9aa6ba;--line:#2c3850;--ok:#3ec28f;--bad:#ff6b7f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+h1{margin:0 0 4px;font-size:1.8rem}
+p.s{color:var(--mute);margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input,select,textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+textarea{min-height:90px}
+button,.btn{display:block;width:100%;font:inherit;font-weight:600;padding:14px;border:0;border-radius:10px;background:var(--ok);color:#fff;text-align:center;cursor:pointer;margin-top:12px}
+.btn input{display:none}
+.row{border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px}
+.row.win{border:2px solid var(--ok)}
+.v{font-weight:700}.win .v{color:var(--ok)}
+.hit{background:var(--ok);color:#fff;border-radius:6px;padding:1px 7px}
+.miss{color:var(--mute)}
+small{color:var(--mute)}
+</style>
+</head>
+<body>
+<main>
+<h1>Verificar jogos</h1>
+<p class="s">Tire uma foto ao boletim. Eu leio o jogo, a data e os números.</p>
+
+<div class="card">
+<label class="btn" style="margin-top:0">Tirar foto ao boletim<input id="foto" type="file" accept="image/*" capture="environment"></label>
+<p id="estado" class="s" style="margin:10px 0 0"></p>
+</div>
+
+<div class="card">
+<label for="jogo">Jogo</label>
+<select id="jogo"><option value="euromilhoes">Euromilhões</option><option value="totoloto">Totoloto</option><option value="m1lhao">M1lhão</option></select>
+<label for="data">Data do sorteio</label>
+<input id="data" type="date">
+<label for="apostas">Apostas <small>(uma por linha; Euromilhões: 3 12 25 33 41 + 2 9; Totoloto: 4 5 31 45 46 + 4; M1lhão: RSH 33471)</small></label>
+<textarea id="apostas"></textarea>
+<button id="ver">Verificar</button>
+<div id="out"></div>
+</div>
+
+<div class="card"><label for="texto">Texto lido da foto <small>(para conferir)</small></label><textarea id="texto" readonly></textarea></div>
+</main>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+var R={euromilhoes:{},totoloto:{},m1lhao:{}};
+fetch("resultados.json",{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){R=j}).catch(function(){});
+
+var G={euromilhoes:{n:5,max:50,s:2,smax:12,
+ tier:function(m,s){return {"5,2":1,"5,1":2,"5,0":3,"4,2":4,"4,1":5,"3,2":6,"4,0":7,"2,2":8,"3,1":9,"3,0":10,"1,2":11,"2,1":12,"2,0":13}[m+","+s]||null}},
+ totoloto:{n:5,max:49,s:1,smax:13,
+ tier:function(m,s){return m==5?(s?1:2):m==4?3:m==3?4:m==2?5:(m==0&&s)?6:null}}};
+
+function nums(s){return (s.match(/\d+/g)||[]).map(Number)}
+function norm(s){return s.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+
+$("foto").onchange=function(e){
+  var f=e.target.files[0];if(!f)return;
+  $("estado").textContent="A ler o boletim… pode demorar um pouco.";
+  Tesseract.recognize(f,"eng").then(function(r){
+    $("texto").value=r.data.text;interpretar(r.data.text);
+    $("estado").textContent="Leitura feita. Confirme os dados abaixo e toque em Verificar.";
+  }).catch(function(){$("estado").textContent="Não consegui ler a foto. Escreva os dados à mão."});
+};
+
+function interpretar(t){
+  var N=norm(t),jogo="m1lhao";
+  if(/TOTOLOTO/.test(N))jogo="totoloto";else if(/EUROMIL/.test(N))jogo="euromilhoes";
+  $("jogo").value=jogo;
+  var d=t.match(/(\d{4})[\/\-.](\d{2})[\/\-.](\d{2})/);
+  if(d)$("data").value=d[1]+"-"+d[2]+"-"+d[3];
+  var linhas=[];
+  if(jogo=="m1lhao"){
+    (N.match(/[A-Z]{3}\s?\d{5}/g)||[]).forEach(function(c){linhas.push(c.replace(/\s/g,"").replace(/(\D{3})(\d{5})/,"$1 $2"))});
+  }else{
+    var g=G[jogo];
+    t.split("\n").forEach(function(l){
+      if(/\d{4}[\/\-.]\d{2}/.test(l))return;
+      var n=(l.match(/\b\d{1,2}\b/g)||[]).map(Number);
+      if(n.length>=g.n+g.s)linhas.push(n.slice(0,g.n).join(" ")+" + "+n.slice(g.n,g.n+g.s).join(" "));
+    });
+  }
+  $("apostas").value=linhas.join("\n");
+}
+
+function row(cls,html){var d=document.createElement("div");d.className="row "+cls;d.innerHTML=html;return d}
+function esc(s){return s.replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
+
+$("ver").onclick=function(){
+  var out=$("out");out.textContent="";
+  var jogo=$("jogo").value,data=$("data").value,
+      linhas=$("apostas").value.split("\n").map(function(x){return x.trim()}).filter(Boolean);
+  if(!data||!linhas.length){out.appendChild(row("","<span class='v'>Falta a data ou as apostas.</span>"));return}
+  var res=(R[jogo]||{})[data];
+  if(!res){out.appendChild(row("","<span class='v'>Ainda não há resultado guardado para "+esc(data)+".</span><br><small>Volte a tentar depois do sorteio.</small>"));return}
+
+  if(jogo=="m1lhao"){
+    var w=String(res).toUpperCase().replace(/\s/g,"");
+    linhas.forEach(function(l){
+      var c=l.toUpperCase().replace(/\s/g,""),ok=c==w;
+      out.appendChild(row(ok?"win":"","<b>"+esc(l)+"</b><br><span class='v'>"+(ok?"Ganhou 1 000 000 €!":"Sem prémio")+"</span><br><small>Código sorteado: "+esc(w.slice(0,3)+" "+w.slice(3))+"</small>"));
+    });
+    return;
+  }
+
+  var g=G[jogo],wn=res.n,ws=res.s||[res.ns];
+  linhas.forEach(function(l){
+    var p=l.split("+"),a=nums(p[0]),b=nums(p[1]||"");
+    if(a.length!=g.n||b.length!=g.s){out.appendChild(row("","<b>"+esc(l)+"</b><br><span class='v'>Formato inválido</span>"));return}
+    var ha=a.filter(function(x){return wn.indexOf(x)>-1}),hb=b.filter(function(x){return ws.indexOf(x)>-1}),t=g.tier(ha.length,hb.length);
+    function fmt(arr,hit){return arr.map(function(x){return hit.indexOf(x)>-1?"<span class='hit'>"+x+"</span>":"<span class='miss'>"+x+"</span>"}).join(" ")}
+    out.appendChild(row(t?"win":"","<div>"+fmt(a,ha)+" + "+fmt(b,hb)+"</div><span class='v'>"+(t?t+".º prémio":"Sem prémio")+"</span><br><small>Acertou "+ha.length+" números e "+hb.length+(g.s==1?" no Número da Sorte":" estrelas")+". Falhou "+(g.n-ha.length)+" números.</small>"));
+  });
+  out.appendChild(row("","<small>Chave sorteada: "+wn.join(" ")+" + "+ws.join(" ")+"</small>"));
+};
+</script>
+</body>
+</html>
